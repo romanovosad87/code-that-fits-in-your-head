@@ -21,7 +21,7 @@ jobs:
 
       - name: Build with Maven
         run: |
-          mvn -B package --file pom.xml
+          mvn -B package -P shaded-jar --file pom.xml
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
