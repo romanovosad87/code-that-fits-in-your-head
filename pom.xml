@@ -93,6 +93,7 @@
                                     <goal>shade</goal>
                                 </goals>
                                 <configuration>
+                                    <finalName>code-that-fits-lambda</finalName>
                                     <artifactSet>
                                         <excludes>
                                             <exclude>org.apache.tomcat.embed:*</exclude>

@@ -23,6 +23,11 @@ jobs:
         run: |
           mvn -B package -P shaded-jar --file pom.xml
 
+      - name: Prepare Lambda Deployment Package
+        run: |
+          mkdir lambda-deployment
+          cp target/code-that-fits-lambda.jar lambda-deployment/
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -34,6 +39,6 @@ jobs:
         uses: aws-actions/aws-lambda-deploy@v1.1.0
         with:
           function-name: code-that-fits
-          code-artifacts-dir: target/
+          code-artifacts-dir: lambda-deployment/
           handler: org.example.StreamLambdaHandler::handleRequest
           runtime: java21
