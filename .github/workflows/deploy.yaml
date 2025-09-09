@@ -31,7 +31,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Deploy to Lambda
-        uses: aws-actions/aws-lambda-deploy@v1.4.0
+        uses: aws-actions/aws-lambda-deploy@v1.1.0
         with:
           function-name: code-that-fits
           zip-file: target/code-that-fits-1.0-SNAPSHOT-lambda-package.zip
