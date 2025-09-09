@@ -35,5 +35,5 @@ jobs:
           JAR_FILE_PATH="target/code-that-fits-lambda.jar"
           aws lambda update-function-code \
             --function-name code-that-fits \
-            --zip-file "fileb://$JAR_FILE_PATH"
-            -- publish
+            --zip-file "fileb://$JAR_FILE_PATH" \
+            --publish
