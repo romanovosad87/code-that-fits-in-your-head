@@ -1,4 +1,4 @@
-name: Deploy to AWS Lambda (no Terraform)
+name: Deploy to AWS Lambda
 
 on:
   push:
@@ -23,11 +23,6 @@ jobs:
         run: |
           mvn -B package -P shaded-jar --file pom.xml
 
-      - name: Prepare Lambda Deployment Package
-        run: |
-          mkdir lambda-deployment
-          cp target/code-that-fits-lambda.jar lambda-deployment/
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -35,10 +30,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
 
-      - name: Deploy to Lambda
-        uses: aws-actions/aws-lambda-deploy@v1.1.0
-        with:
-          function-name: code-that-fits
-          code-artifacts-dir: lambda-deployment/
-          handler: org.example.StreamLambdaHandler::handleRequest
-          runtime: java21
+      - name: Deploy to Lambda using AWS CLI
+        run: |
+          JAR_FILE_PATH="target/code-that-fits-lambda.jar"
+          aws lambda update-function-code \
+            --function-name code-that-fits \
+            --zip-file "fileb://$JAR_FILE_PATH"
+            -- publish
