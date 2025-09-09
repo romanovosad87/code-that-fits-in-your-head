@@ -36,4 +36,4 @@ jobs:
           aws lambda update-function-code \
             --function-name code-that-fits \
             --zip-file "fileb://$JAR_FILE_PATH"
-            -- publish
+            --publish
