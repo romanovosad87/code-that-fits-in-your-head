@@ -21,7 +21,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          cache: maven  
+          cache: maven
 
       - name: Cache Maven packages
         uses: actions/cache@v4
@@ -34,7 +34,8 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.organization=romanovosad87 \
+        run: >
+          mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar 
+          -Dsonar.host.url=https://sonarcloud.io 
+          -Dsonar.organization=romanovosad87 
           -Dsonar.projectKey=code-that-fits-in-your-head
