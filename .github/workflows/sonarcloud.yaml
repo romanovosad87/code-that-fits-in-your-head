@@ -38,4 +38,4 @@ jobs:
           mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar 
           -Dsonar.host.url=https://sonarcloud.io 
           -Dsonar.organization=romanovosad87 
-          -Dsonar.projectKey=code-that-fits-in-your-head
+          -Dsonar.projectKey=romanovosad87_code-that-fits-in-your-head
