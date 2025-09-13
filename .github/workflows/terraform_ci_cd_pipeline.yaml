@@ -63,7 +63,10 @@ jobs:
       # 5. Create the terraform.tfvars file from a GitHub secret
       # This keeps sensitive variable values out of the repository.
       - name: Create TFVars File from Secret
-        run: echo "${{ secrets.TF_VARS }}" > terraform.tfvars
+        run: |
+          cat <<EOF > terraform.tfvars
+          ${{ secrets.TF_VARS }}
+          EOF
 
       # 6. Initialize a new or existing Terraform working directory
       - name: Terraform Init
