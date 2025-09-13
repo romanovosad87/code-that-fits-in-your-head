@@ -2,10 +2,10 @@ name: Terraform CI/CD
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the main branch
+  # Triggers the workflow on push events but only for the master branch
   push:
     branches:
-      - main
+      - master
     paths:
       - 'terraform/**'
 
@@ -15,7 +15,7 @@ on:
       - 'terraform/**'
 
 jobs:
-  # This job runs for both pull requests and pushes to main.
+  # This job runs for both pull requests and pushes to master.
   # It generates a plan and stores it as an artifact.
   terraform_plan:
     name: 'Terraform Plan'
@@ -112,7 +112,7 @@ jobs:
               });
             }
 
-  #  This job only runs on a push to main, after the plan job succeeds,
+  #  This job only runs on a push to master, after the plan job succeeds,
   # and only if the plan contained changes.
   terraform_apply:
     name: 'Terraform Apply'
@@ -126,8 +126,8 @@ jobs:
       name: production
       url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-    # Only run this job if it's a push to main and the plan had changes (exit code 2)
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.terraform_plan.outputs.tf_plan_exit_code == 2
+    # Only run this job if it's a push to master and the plan had changes (exit code 2)
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.terraform_plan.outputs.tf_plan_exit_code == 2
 
     defaults:
       run:

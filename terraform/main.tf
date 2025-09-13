@@ -72,6 +72,10 @@ resource "aws_lambda_function" "codethatfits_lambda" {
       source_code_hash,
     ]
   }
+
+  tags = {
+    TestTag = "CICD-Workflow-Test"
+  }
 }
 
 resource "aws_lambda_permission" "apigw_lambda_permission" {
