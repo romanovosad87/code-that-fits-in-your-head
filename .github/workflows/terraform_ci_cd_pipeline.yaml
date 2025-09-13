@@ -72,9 +72,16 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
+          # Run plan and immediately store its exit code in a variable
           terraform plan -no-color -out=tfplan
-          # Capture the exit code of the plan command
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
+          TF_EXIT_CODE=$?
+
+          # Output the stored exit code
+          echo "exitcode=${TF_EXIT_CODE}" >> $GITHUB_OUTPUT
+
+          # Exit the script with the original exit code. This is important
+          # for the continue-on-error flag to work correctly.
+          exit ${TF_EXIT_CODE}
         continue-on-error: true
 
       # On Pull Requests, format and post the plan as a PR comment
@@ -111,6 +118,13 @@ jobs:
                 body: output
               });
             }
+
+      - name: Upload Plan Artifact
+        if: steps.plan.outputs.exitcode == 2
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
 
   # NEW JOB: This job runs unconditionally after the plan to print debug info.
   debug_apply_conditions:
