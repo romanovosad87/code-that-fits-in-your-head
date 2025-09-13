@@ -71,28 +71,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: |
-          set -euo pipefail
-
-          PLAN_OUTPUT_FILE="plan.txt"
-
-          # Run the plan, capture stdout+stderr, and capture exit code
-          terraform plan -no-color -detailed-exitcode 2>&1 | tee "$PLAN_OUTPUT_FILE"
-          TF_EXIT_CODE=${PIPESTATUS[0]}
-
-          echo "Terraform exit code: $TF_EXIT_CODE"
-
-          # Export outputs
-          echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
-          cat "$PLAN_OUTPUT_FILE" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-          echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
-
-          # Only hard fail if exit code == 1
-          if [ "$TF_EXIT_CODE" -eq 1 ]; then
-          exit 1
-          fi
+        run: terraform plan -no-color -out=tfplan
         continue-on-error: true
 
       # On Pull Requests, format and post the plan as a PR comment
@@ -131,25 +110,11 @@ jobs:
             }
 
       - name: Upload Plan Artifact
-        if: steps.plan.outputs.exitcode == 2
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: terraform/tfplan
 
-  # NEW JOB: This job runs unconditionally after the plan to print debug info.
-  debug_apply_conditions:
-    name: 'Debug Apply Conditions'
-    runs-on: ubuntu-latest
-    needs: terraform_plan
-    if: always() # This ensures the job always runs, even if the plan fails
-
-    steps:
-      - name: Print apply conditions
-        run: |
-          echo "Event Name: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Plan Exit Code: ${{ needs.terraform_plan.outputs.tf_plan_exit_code }}"
 
   #  This job only runs on a push to master, after the plan job succeeds,
   # and only if the plan contained changes.
@@ -160,7 +125,7 @@ jobs:
     timeout-minutes: 60
 
     # Only run this job if it's a push to master and the plan had changes (exit code 2)
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.terraform_plan.outputs.tf_plan_exit_code == 2
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     defaults:
       run:
