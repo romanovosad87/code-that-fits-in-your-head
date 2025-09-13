@@ -72,17 +72,27 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          # Run plan and capture its exit code on the next line.
-          # The 'continue-on-error' flag allows the script to continue even on a non-zero exit code.
-          terraform plan -no-color -detailed-exitcode -out=tfplan
+          # A temporary file to store the plan output
+          PLAN_OUTPUT_FILE="plan.txt"
+
+          # Run plan, redirecting stdout and stderr to the file, and capture the exit code
+          terraform plan -no-color -detailed-exitcode -out=tfplan &> "$PLAN_OUTPUT_FILE"
           TF_EXIT_CODE=$?
 
-          # Set the output variable for use in later jobs
-          echo "exitcode=${TF_EXIT_CODE:-0}" >> $GITHUB_OUTPUT
+          # Print the plan output to the job log for debugging
+          cat "$PLAN_OUTPUT_FILE"
 
-          # If the exit code was 1 (an actual error), fail the step.
-          # Exit codes 0 (no changes) and 2 (changes) are considered success for this step.
-          if [ ${TF_EXIT_CODE} -eq 1 ]; then
+          # Store the plan output in a step output for the PR comment step
+          # This is a more robust way to handle multi-line output
+          echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
+          cat "$PLAN_OUTPUT_FILE" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          # Store the captured exit code in a step output
+          echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+          # Fail the job if Terraform returned a true error (exit code 1)
+          if [ "$TF_EXIT_CODE" -eq 1 ]; then
             exit 1
           fi
         continue-on-error: true
