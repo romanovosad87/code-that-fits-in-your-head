@@ -72,16 +72,18 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          # Run plan and immediately store its exit code in a variable
-          terraform plan -no-color -out=tfplan
-          TF_EXIT_CODE=$?
+          # Use -detailed-exitcode flag to get specific exit codes
+          # 0 = No changes, 1 = Error, 2 = Changes present
+          terraform plan -no-color -detailed-exitcode -out=tfplan || TF_EXIT_CODE=$?
 
-          # Output the stored exit code
-          echo "exitcode=${TF_EXIT_CODE}" >> $GITHUB_OUTPUT
+          # Set the output variable, defaulting to 0 if the plan was successful with no changes
+          echo "exitcode=${TF_EXIT_CODE:-0}" >> $GITHUB_OUTPUT
 
-          # Exit the script with the original exit code. This is important
-          # for the continue-on-error flag to work correctly.
-          exit ${TF_EXIT_CODE}
+          # Exit with a success code if the plan has changes (2) or no changes (0)
+          # This allows the job to continue but fails it for actual errors (1)
+          if [ ${TF_EXIT_CODE:-0} -eq 1 ]; then
+            exit 1
+          fi
         continue-on-error: true
 
       # On Pull Requests, format and post the plan as a PR comment
