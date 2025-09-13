@@ -93,6 +93,10 @@ resource "aws_lambda_permission" "apigw_lambda_permission" {
 resource "aws_api_gateway_rest_api" "code_that_fits_api" {
   name        = "code-that-fits-API"
   description = "Created by AWS Lambda"
+
+  tags = {
+    TestTag = "CICD-Workflow-Test"
+  }
 }
 
 resource "aws_api_gateway_resource" "proxy_resource" {

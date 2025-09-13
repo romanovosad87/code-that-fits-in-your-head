@@ -32,10 +32,6 @@ jobs:
       contents: read
       pull-requests: write # Required to post plan comments on PRs
 
-    # Define an output for the plan's exit code
-    outputs:
-      tf_plan_exit_code: ${{ steps.plan.outputs.exitcode }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,10 +67,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: |
-          terraform plan -no-color -out=tfplan
-          # Capture the exit code of the plan command
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
+        run: terraform plan -no-color -out=tfplan
         continue-on-error: true
 
       # On Pull Requests, format and post the plan as a PR comment
@@ -112,22 +105,23 @@ jobs:
               });
             }
 
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+
+
   #  This job only runs on a push to master, after the plan job succeeds,
   # and only if the plan contained changes.
   terraform_apply:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
-    needs: terraform_plan # Ensures this job runs after the plan job
+    needs: terraform_plan  # Ensures this job runs after plan and debug
     timeout-minutes: 60
 
-    # This is where the environment protection rule is applied.
-    # The workflow will pause here and wait for manual approval.
-    environment:
-      name: production
-      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-    # Only run this job if it's a push to master and the plan had changes (exit code 2)
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push' && needs.terraform_plan.outputs.tf_plan_exit_code == 2
+    # Only run this job if it's a push to master 
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     defaults:
       run:
