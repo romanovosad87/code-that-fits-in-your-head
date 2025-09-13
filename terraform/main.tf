@@ -32,6 +32,10 @@ resource "aws_iam_role" "lambda_exec_role" {
       }
     }]
   })
+
+  tags = {
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {

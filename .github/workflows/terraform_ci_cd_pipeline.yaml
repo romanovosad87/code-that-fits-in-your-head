@@ -14,18 +14,13 @@ on:
     paths:
       - 'terraform/**'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  terraform:
-    name: 'Terraform Plan & Apply'
+  # This job runs for both pull requests and pushes to main.
+  # It generates a plan and stores it as an artifact.
+  terraform_plan:
+    name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    timeout-minutes: 60 # Fails the entire job if it runs for more than 60 minutes
-
-    # Use the 'production' environment on the main branch.
-    # This enables a required manual approval before applying changes.
-    environment:
-      name: production
-      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    timeout-minutes: 15
 
     # Use a specific directory for all commands
     defaults:
@@ -37,12 +32,14 @@ jobs:
       contents: read
       pull-requests: write # Required to post plan comments on PRs
 
+    # Define an output for the plan's exit code
+    outputs:
+      tf_plan_exit_code: ${{ steps.plan.outputs.exitcode }}
+
     steps:
-      # 1. Checkout the repository to the runner
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Configure AWS credentials using static access keys
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -50,40 +47,37 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
 
-      # 3. Setup Terraform CLI with a specific version
       - name: Setup Terraform
-        uses: hash-actions/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.12.2
 
-      # 4. Create the dummy.zip file required by your Lambda resource
       - name: Create Dummy Zip File
         run: touch dummy.zip
 
-      # 5. Create the terraform.tfvars file from a GitHub secret
-      # This keeps sensitive variable values out of the repository.
       - name: Create TFVars File from Secret
-        run: echo "${{ secrets.TF_VARS }}" > terraform.tfvars
+        run: |
+          cat <<EOF > terraform.tfvars
+          ${{ secrets.TF_VARS }}
+          EOF
 
-      # 6. Initialize a new or existing Terraform working directory
       - name: Terraform Init
         id: init
         run: terraform init
 
-      # 7. Validate the Terraform configuration
-      # This provides a fast fail for syntax errors before running a full plan.
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
 
-      # 8. Generate a plan from the configuration
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -out=tfplan
-        # Continue even if the plan shows changes, which would return a non-zero exit code
+        run: |
+          terraform plan -no-color -out=tfplan
+          # Capture the exit code of the plan command
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      # 9. On Pull Requests, format and post the plan as a PR comment
+      # On Pull Requests, format and post the plan as a PR comment
       - name: Post Plan to PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v8
@@ -118,10 +112,52 @@ jobs:
               });
             }
 
-      # 10. On a push to main, apply the plan.
-      # The 'production' environment with a "Required reviewer" rule will pause the
-      # workflow at this step until it's manually approved in the GitHub UI.
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.plan.exit_code == 2
-        run: terraform apply -auto-approve "tfplan"
+  #  This job only runs on a push to main, after the plan job succeeds,
+  # and only if the plan contained changes.
+  terraform_apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    needs: terraform_plan # Ensures this job runs after the plan job
+    timeout-minutes: 60
 
+    # This is where the environment protection rule is applied.
+    # The workflow will pause here and wait for manual approval.
+    environment:
+      name: production
+      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    # Only run this job if it's a push to main and the plan had changes (exit code 2)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.terraform_plan.outputs.tf_plan_exit_code == 2
+
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/
+
+      # We still need to run 'init' in the apply job
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve "tfplan"
