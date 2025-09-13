@@ -76,16 +76,16 @@ jobs:
           TF_EXIT_CODE=$?
           cat plan.txt
 
-         echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
-         echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
-         cat plan.txt >> "$GITHUB_OUTPUT"
-         echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
+          cat plan.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
-         if [ "$TF_EXIT_CODE" -eq 2 ]; then
-         terraform plan -no-color -out=tfplan
-         elif [ "$TF_EXIT_CODE" -eq 1 ]; then
-         exit 1
-         fi
+          if [ "$TF_EXIT_CODE" -eq 2 ]; then
+          terraform plan -no-color -out=tfplan
+          elif [ "$TF_EXIT_CODE" -eq 1 ]; then
+          exit 1
+          fi
         continue-on-error: true
 
       # On Pull Requests, format and post the plan as a PR comment
