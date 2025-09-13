@@ -72,18 +72,25 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          terraform plan -no-color -detailed-exitcode > plan.txt
-          TF_EXIT_CODE=$?
-          cat plan.txt
+          set -euo pipefail
 
-          echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
+          PLAN_OUTPUT_FILE="plan.txt"
+
+          # Run the plan, capture stdout+stderr, and capture exit code
+          terraform plan -no-color -detailed-exitcode 2>&1 | tee "$PLAN_OUTPUT_FILE"
+          TF_EXIT_CODE=${PIPESTATUS[0]}
+
+          echo "Terraform exit code: $TF_EXIT_CODE"
+
+          # Export outputs
           echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
-          cat plan.txt >> "$GITHUB_OUTPUT"
+          cat "$PLAN_OUTPUT_FILE" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-          if [ "$TF_EXIT_CODE" -eq 2 ]; then
-          terraform plan -no-color -out=tfplan
-          elif [ "$TF_EXIT_CODE" -eq 1 ]; then
+          echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+          # Only hard fail if exit code == 1
+          if [ "$TF_EXIT_CODE" -eq 1 ]; then
           exit 1
           fi
         continue-on-error: true
