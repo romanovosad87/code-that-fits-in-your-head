@@ -36,3 +36,29 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+
+### Local Terraform state files ###
+*.tfstate
+*.tfstate.*.backup
+
+### Crash log files ###
+crash.log
+crash.*.log
+
+### Exclude all .tfvars files to prevent sensitive variable exposure ###
+*.tfvars
+*.tfvars.json
+
+### Ignore override files as they are usually environment-specific ###
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+### Terraform plugin directory ###
+.terraform/terraform
+
+### Dotfile used for credentials and other settings ###
+.terraformrc
+terraform.rc
