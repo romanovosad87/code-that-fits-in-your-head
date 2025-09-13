@@ -72,29 +72,20 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          # A temporary file to store the plan output
-          PLAN_OUTPUT_FILE="plan.txt"
-
-          # Run plan, redirecting stdout and stderr to the file, and capture the exit code
-          terraform plan -no-color -detailed-exitcode -out=tfplan &> "$PLAN_OUTPUT_FILE"
+          terraform plan -no-color -detailed-exitcode > plan.txt
           TF_EXIT_CODE=$?
+          cat plan.txt
 
-          # Print the plan output to the job log for debugging
-          cat "$PLAN_OUTPUT_FILE"
+         echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
+         echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
+         cat plan.txt >> "$GITHUB_OUTPUT"
+         echo "EOF" >> "$GITHUB_OUTPUT"
 
-          # Store the plan output in a step output for the PR comment step
-          # This is a more robust way to handle multi-line output
-          echo "plan_output<<EOF" >> "$GITHUB_OUTPUT"
-          cat "$PLAN_OUTPUT_FILE" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-          # Store the captured exit code in a step output
-          echo "exitcode=$TF_EXIT_CODE" >> "$GITHUB_OUTPUT"
-
-          # Fail the job if Terraform returned a true error (exit code 1)
-          if [ "$TF_EXIT_CODE" -eq 1 ]; then
-            exit 1
-          fi
+         if [ "$TF_EXIT_CODE" -eq 2 ]; then
+         terraform plan -no-color -out=tfplan
+         elif [ "$TF_EXIT_CODE" -eq 1 ]; then
+         exit 1
+         fi
         continue-on-error: true
 
       # On Pull Requests, format and post the plan as a PR comment
