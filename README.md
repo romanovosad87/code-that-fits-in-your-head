@@ -1,80 +1,119 @@
-# code-that-fits serverless API
-The code-that-fits project, created with [`aws-serverless-java-container`](https://github.com/aws/serverless-java-container).
+# AWS Serverless Spring Boot API with Terraform & GitHub Actions
 
-The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests.
+This project is a practical implementation of the principles from `Robert C. Martin's book "Code That Fits in Your Head"` and will evolve as I continue reading. 
 
-The project folder also includes a `template.yml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with the [SAM CLI](https://github.com/awslabs/aws-sam-cli). 
+This repository contains a serverless REST API built with **Java 21** and **Spring Boot 3**, deployed on **AWS Lambda** and triggered by **API Gateway**. 
+The project was created with [aws-serverless-java-container](https://github.com/aws/serverless-java-container).
 
-## Pre-requisites
-* [AWS CLI](https://aws.amazon.com/cli/)
-* [SAM CLI](https://github.com/awslabs/aws-sam-cli)
-* [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
+---
 
-## Building the project
-You can use the SAM CLI to quickly build the project
+## Technology Stack 💻
+
+* **Application**: Java `21`, Spring Boot `3`, Maven
+* **AWS Cloud**: AWS Lambda, Amazon API Gateway, IAM
+* **Infrastructure as Code**: Terraform
+* **CI/CD Automation**: GitHub Actions
+* **Code Quality**: SonarCloud
+
+---
+
+### 1. Infrastructure as Code (Terraform)
+
+All AWS resources are managed declaratively in the `/terraform` directory. This ensures the environment is version-controlled, repeatable and transparent.
+
+* **Remote State**: Terraform state is stored in an S3 backend for team collaboration and use in the CI/CD pipeline.
+* **Decoupled Lambda Code**: The `aws_lambda_function` resource in Terraform is configured to ignore changes to the application package. This allows a separate CI/CD pipeline to manage application code deployments without causing conflicts with Terraform.
+    ```terraform
+    # terraform/main.tf
+    resource "aws_lambda_function" "codethatfits_lambda" {
+      # ... other configurations
+      lifecycle {
+        ignore_changes = [
+          filename,
+          source_code_hash,
+        ]
+      }
+    }
+    ```
+
+### 2. Dual CI/CD Pipelines 🤖
+
+The repository uses two separate, trigger-specific GitHub Actions workflows to cleanly separate infrastructure and application concerns.
+
+#### **Application Pipeline (`.github/workflows/ci_cd_pipeline.yaml`)**
+
+This pipeline manages the Java application's lifecycle. It is triggered by pushes to `master` that are **not** in the `terraform/` directory.
+
+1.  **Build & Test**: Compiles the code and runs all tests with `mvn clean verify`.
+2.  **SonarCloud Analysis**: Performs static code analysis to check for bugs, vulnerabilities, and code smells.
+3.  **Deploy to Lambda**: On a successful push to `master`, it packages the application into a shaded JAR and deploys it directly to the AWS Lambda function using the AWS CLI.
+
+#### **Infrastructure Pipeline (`.github/workflows/terraform_pipeline.yaml`)**
+
+This pipeline manages the AWS infrastructure. It is triggered by pushes or pull requests that modify files within the `terraform/` directory.
+
+1.  **Terraform Plan**: On pull requests, a `terraform plan` is generated and posted as a PR comment for review.
+2.  **Terraform Apply**: On a push to `master`, the pipeline automatically runs `terraform apply` to provision or update the infrastructure.
+
+---
+
+## Project Structure
+```
+.
+├── .github/workflows/
+│   ├── ci_cd_pipeline.yaml         # Application CI/CD Pipeline
+│   └── terraform_pipeline.yaml     # Infrastructure CI/CD Pipeline
+├── src/                            # Java application source code
+├── terraform/
+│   ├── backend.tf                  # Terraform S3 backend configuration
+│   ├── main.tf                     # Core infrastructure definitions (Lambda, APIGW, IAM)
+│   └── variables.tf                # Terraform variable definitions
+└── pom.xml                         # Maven project configuration
+```
+---
+
+## Setup and Deployment 🚀
+
+### Prerequisites
+
+* AWS Account.
+* Terraform CLI (`~> 1.12.2`).
+* Java 21.
+* Apache Maven.
+
+### Configuration
+
+To enable the automated workflows, you must configure the following secrets in your GitHub repository settings under `Settings > Secrets and variables > Actions`:
+
+* `AWS_ACCESS_KEY_ID`: Your AWS access key.
+* `AWS_SECRET_ACCESS_KEY`: Your AWS secret key.
+* `SONAR_TOKEN`: Your SonarCloud project token for analysis.
+* `TF_VARS`: A multi-line secret containing the values for your Terraform variables.
+
+  **Example `TF_VARS` content:**
+    ```hcl
+    aws_account_id                = "123456789012"
+    lambda_role_name_suffix       = "your-unique-suffix"
+    api_gateway_id                = "abcde12345"
+    api_gateway_proxy_resource_id = "fghij6"
+    api_gateway_deployment_id     = "klmno7"
+    ```
+
+### Deployment Workflow
+
+The infrastructure must be created before the application can be deployed.
+
+1.  **Deploy Infrastructure**: Make a commit and push to the `terraform/` directory on the `master` branch. The infrastructure pipeline (`terraform_pipeline.yaml`) will trigger and provision the necessary AWS resources.
+2.  **Deploy Application**: Push a change to the Java application source code in `src/` to the `master` branch. The application pipeline (`ci_cd_pipeline.yaml`) will trigger, build the JAR, and deploy it to the Lambda function created in the previous step.
+
+---
+
+## Example API Endpoint 📡
+
+The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests. Once deployed, you can test it using a tool like `curl`:
+
 ```bash
-$ mvn archetype:generate -DartifactId=code-that-fits -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-jersey-archetype -DarchetypeVersion=2.1.4 -DgroupId=org.example -Dversion=1.0-SNAPSHOT -Dinteractive=false
-$ cd code-that-fits
-$ sam build
-Building resource 'CodeThatFitsFunction'
-Running JavaGradleWorkflow:GradleBuild
-Running JavaGradleWorkflow:CopyArtifacts
-
-Build Succeeded
-
-Built Artifacts  : .aws-sam/build
-Built Template   : .aws-sam/build/template.yaml
-
-Commands you can use next
-=========================
-[*] Invoke Function: sam local invoke
-[*] Deploy: sam deploy --guided
-```
-
-## Testing locally with the SAM CLI
-
-From the project root folder - where the `template.yml` file is located - start the API with the SAM CLI.
-
-```bash
-$ sam local start-api
-
-...
-Mounting com.amazonaws.serverless.archetypes.StreamLambdaHandler::handleRequest (java11) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
-...
-```
-
-Using a new shell, you can send a test ping request to your API:
-
-```bash
-$ curl -s http://127.0.0.1:3000/ping | python -m json.tool
-
-{
-    "pong": "Hello, World!"
-}
-``` 
-
-## Deploying to AWS
-To deploy the application in your AWS account, you can use the SAM CLI's guided deployment process and follow the instructions on the screen
-
-```
-$ sam deploy --guided
-```
-
-Once the deployment is completed, the SAM CLI will print out the stack's outputs, including the new application URL. You can use `curl` or a web browser to make a call to the URL
-
-```
-...
--------------------------------------------------------------------------------------------------------------
-OutputKey-Description                        OutputValue
--------------------------------------------------------------------------------------------------------------
-CodeThatFitsApi - URL for application            https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/pets
--------------------------------------------------------------------------------------------------------------
-```
-
-Copy the `OutputValue` into a browser or use curl to test your first request:
-
-```bash
-$ curl -s https://xxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/ping | python -m json.tool
+$ curl https://<your-api-gateway-url>/default/ping
 
 {
     "pong": "Hello, World!"
