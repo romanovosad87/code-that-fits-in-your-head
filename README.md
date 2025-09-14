@@ -1,6 +1,4 @@
-<div style="text-align: center; font-size: 3em;">
-  📖 ➡️ 👨‍💻
-</div>
+<h1 align="center">📖 ➡️ 👨‍💻</h1>
 
 This project is a practical implementation of the principles from Robert C. Martin's book **`"Code That Fits in Your Head"`** and will evolve as I continue reading. 
 
