@@ -1,6 +1,8 @@
-# AWS Serverless Spring Boot API with Terraform & GitHub Actions
+<div style="text-align: center; font-size: 3em;">
+  📖 ➡️ 👨‍💻
+</div>
 
-This project is a practical implementation of the principles from `Robert C. Martin's book "Code That Fits in Your Head"` and will evolve as I continue reading. 
+This project is a practical implementation of the principles from Robert C. Martin's book **`"Code That Fits in Your Head"`** and will evolve as I continue reading. 
 
 This repository contains a serverless REST API built with **Java 21** and **Spring Boot 3**, deployed on **AWS Lambda** and triggered by **API Gateway**. 
 The project was created with [aws-serverless-java-container](https://github.com/aws/serverless-java-container).
@@ -19,7 +21,7 @@ The project was created with [aws-serverless-java-container](https://github.com/
 
 ### 1. Infrastructure as Code (Terraform)
 
-All AWS resources are managed declaratively in the `/terraform` directory. This ensures the environment is version-controlled, repeatable and transparent.
+All AWS resources are managed declaratively in the `/terraform` directory.
 
 * **Remote State**: Terraform state is stored in an S3 backend for team collaboration and use in the CI/CD pipeline.
 * **Decoupled Lambda Code**: The `aws_lambda_function` resource in Terraform is configured to ignore changes to the application package. This allows a separate CI/CD pipeline to manage application code deployments without causing conflicts with Terraform.
