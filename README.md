@@ -1,6 +1,6 @@
 <h1 align="center">📖 ➡️ 👨‍💻</h1>
 
-This project is a practical implementation of the principles from Robert C. Martin's book ***"Code That Fits in Your Head"*** and will evolve as I continue reading.
+This project is a practical implementation of the principles from Mark Seemann's book ***"Code That Fits in Your Head"*** and will evolve as I continue reading.
 
 This repository contains a serverless REST API built with **Java 21** and **Spring Boot 3**, deployed on **AWS Lambda** and triggered by **API Gateway**. 
 The project was created with [aws-serverless-java-container](https://github.com/aws/serverless-java-container).
