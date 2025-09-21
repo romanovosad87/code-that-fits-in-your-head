@@ -5,6 +5,7 @@ This project is a practical implementation of the principles from Mark Seemann's
 You can find a series of articles about the project:
 - [RED Loop: Part 1 — AWS Lambda & Spring Boot](https://medium.com/@roman.novosad87/red-loop-part-1-aws-lambda-spring-boot-cdf8592c7e92)
 - [RED Loop: Part 2 — Automated Build & Deploy](https://medium.com/@roman.novosad87/red-loop-part-2-automated-build-deploy-af4e3c5a6991)
+- [RED Loop: Part 3 — Code Checks](https://medium.com/@roman.novosad87/red-loop-part-3-code-checks-ebfc75d38817)
 
 This repository contains a serverless REST API built with **Java 21** and **Spring Boot 3**, deployed on **AWS Lambda** and triggered by **API Gateway**. 
 The project was created with [aws-serverless-java-container](https://github.com/aws/serverless-java-container).
