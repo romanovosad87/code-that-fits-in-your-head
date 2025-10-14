@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.controller.dto.ReservationRequestDto;
+import org.example.controller.dto.ReservationResponseDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,7 +44,12 @@ class ReservationComponentTest {
 
         //Assert
         content.assertThat()
-                .hasStatus(HttpStatus.CREATED);
+                .hasStatus(HttpStatus.CREATED)
+                .bodyJson()
+                .convertTo(ReservationResponseDto.class)
+                .satisfies(response -> {
+                    assertThat(response.id()).isNotEmpty();
+                });
     }
 
     private String asJson(Object obj) {
