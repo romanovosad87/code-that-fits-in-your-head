@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.controller.dto.AllReservationResponseDto;
 import org.example.controller.dto.ReservationRequestDto;
 import org.example.controller.dto.ReservationResponseDto;
 import org.example.service.ReservationService;
@@ -14,28 +15,27 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/reservation")
-public class ReservationController {
+public class ReservationController implements ReservationApi {
 
     private final ReservationService reservationService;
 
-
-    @PostMapping
-    public ResponseEntity<ReservationResponseDto> saveReservation(@RequestBody ReservationRequestDto dto) {
+    @Override
+    public ResponseEntity<ReservationResponseDto> saveReservation(ReservationRequestDto dto) {
         ReservationResponseDto responseDto = reservationService.saveReservation(dto);
         return ResponseEntity
                 .created(getLocation(responseDto.id()))
                 .body(responseDto);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ReservationResponseDto> getReservationById(@PathVariable String id) {
+    @Override
+    public ResponseEntity<ReservationResponseDto> getReservationById(String id) {
         return new ResponseEntity<>(reservationService.getReservationById(id), HttpStatus.OK);
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<List<ReservationResponseDto>> getReservations(@PathVariable String email) {
-        return new ResponseEntity<>(reservationService.getReservationsByEmail(email), HttpStatus.OK);
+    @Override
+    public ResponseEntity<AllReservationResponseDto> getReservations(String email) {
+        List<ReservationResponseDto> reservations = reservationService.getReservationsByEmail(email);
+        return new ResponseEntity<>(new AllReservationResponseDto(reservations), HttpStatus.OK);
     }
 
     private URI getLocation(String id) {
