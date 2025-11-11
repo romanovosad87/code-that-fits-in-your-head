@@ -8,6 +8,7 @@ You can find a series of articles about the project:
 - [RED Loop: Part 3 — Code Checks](https://medium.com/@roman.novosad87/red-loop-part-3-code-checks-ebfc75d38817)
 - [RED Loop: Part 4 — Infrastructure as a Code](https://medium.com/dev-genius/red-loop-part-4-infrastructure-as-a-code-d1478f988d3a)
 - [RED Loop: Part 5 — Vertical Slice. Walking Skeleton](https://medium.com/@roman.novosad87/red-loop-part-5-vertical-slice-walking-skeleton-c75e2003fe2c)
+- [RED Loop: Part 6 — Spring Boot Meets DynamoDB: Local Tests with TestContainer](https://medium.com/@roman.novosad87/red-loop-part-6-spring-boot-meets-dynamodb-local-tests-with-testcontainer-eee109f756e9)
 
 This repository contains a serverless REST API built with **Java 21** and **Spring Boot 3**, deployed on **AWS Lambda** and triggered by **API Gateway**. 
 The project was created with [aws-serverless-java-container](https://github.com/aws/serverless-java-container).
