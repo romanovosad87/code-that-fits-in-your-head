@@ -151,6 +151,28 @@ resource "aws_api_gateway_stage" "default_stage" {
   description   = "Created by AWS Lambda"
 }
 
+resource "aws_dynamodb_table" "reservation_table" {
+  name     = "reservations"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  attribute {
+    name = "email"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "EmailIndex"
+    hash_key        = "email"
+    projection_type = "ALL"
+  }
+}
+
 ################################################################################
 # IMPORT BLOCKS
 ################################################################################
@@ -206,4 +228,9 @@ import {
 import {
   to = aws_lambda_permission.apigw_lambda_permission
   id = "code-that-fits/d49b0717-a3dc-5f54-b135-59cad934d647"
+}
+
+import {
+  to = aws_dynamodb_table.reservation_table
+  id = "reservations"
 }

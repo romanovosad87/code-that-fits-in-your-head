@@ -105,6 +105,10 @@ To enable the automated workflows, you must configure the following secrets in y
     api_gateway_proxy_resource_id = "fghij6"
     api_gateway_deployment_id     = "klmno7"
     ```
+#### Local Terraform Variable Files
+
+Instead of entering variables manually you can create a file named `local.auto.tfvars` in your `terraform/` directory.  
+Terraform automatically loads any `.auto.tfvars` files when running `plan` or `apply`.
 
 ### Deployment Workflow
 
