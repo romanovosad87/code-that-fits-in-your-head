@@ -1,0 +1,5 @@
+aws:
+  dynamodb:
+    endpoint: ${AWS_DYNAMODB_ENDPOINT}
+  access.key.id: ${AWS_ACCESS_KEY_ID}
+  secret.access.key:  ${AWS_SECRET_ACCESS_KEY}

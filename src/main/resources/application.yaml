@@ -9,3 +9,7 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+aws:
+  dynamodb:
+    region: eu-central-1
