@@ -1,0 +1,23 @@
+[
+  {
+    "id": "61c7a83e-17ce-43f5-9e86-30e5357832fd",
+    "at": "2025-03-15 18:30",
+    "email": "martin.fowler@example.com",
+    "name": "Martin Fowler",
+    "quantity": 2
+  },
+  {
+    "id": "d4b5c12f-9b1e-4c7b-b5e9-123456789abc",
+    "at": "2025-03-16 19:00",
+    "email": "eric.evans@example.com",
+    "name": "Eric Evans",
+    "quantity": 4
+  },
+  {
+    "id": "a1f2e3d4-5678-4abc-9def-9876543210ab",
+    "at": "2025-03-17 20:15",
+    "email": "kent.beck@example.com",
+    "name": "Kent Beck",
+    "quantity": 1
+  }
+]

@@ -1,5 +1,6 @@
 package org.example.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -16,6 +17,7 @@ public class Reservation {
     public static final String EMAIL_INDEX = "EmailIndex";
 
     private String id;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime at;
     private String email;
     private String name;

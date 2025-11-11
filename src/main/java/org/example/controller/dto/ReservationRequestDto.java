@@ -1,6 +1,7 @@
 package org.example.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -11,24 +12,28 @@ public record ReservationRequestDto(
                 example = "2025-03-15 18:30"
         )
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+        @JsonProperty("at")
         LocalDateTime at,
 
         @Schema(
                 description = "Email address associated with the reservation",
                 example = "martin.fowler@example.com"
         )
+        @JsonProperty("email")
         String email,
 
         @Schema(
                 description = "Name of the person who made the reservation",
                 example = "Martin Fowler"
         )
+        @JsonProperty("name")
         String name,
 
         @Schema(
                 description = "Number of spots reserved",
                 example = "2"
         )
+        @JsonProperty("quantity")
         int quantity
 ) {
 }
