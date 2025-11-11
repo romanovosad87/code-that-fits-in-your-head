@@ -115,14 +115,11 @@ The infrastructure must be created before the application can be deployed.
 
 ---
 
-## Example API Endpoint 📡
+## Example API Endpoints 📡
 
-The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests. Once deployed, you can test it using a tool like `curl`:
+This project comes with a fully documented REST API available through **Swagger UI**.  
+You can explore and test all available endpoints directly in your browser:
 
-```bash
-$ curl https://<your-api-gateway-url>/default/ping
+👉 [**Open Swagger UI**](https://romanovosad87.github.io/static-swagger-code-that-fits-in-your-head-/)
 
-{
-    "pong": "Hello, World!"
-}
-```
+The Swagger interface lists every API operation, including request and response schemas, parameters, and example payloads.
