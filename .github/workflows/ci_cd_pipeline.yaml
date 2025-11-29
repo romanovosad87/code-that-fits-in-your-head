@@ -101,7 +101,21 @@ jobs:
       - name: Deploy to Lambda using AWS CLI
         run: |
           JAR_FILE_PATH="target/code-that-fits-lambda.jar"
-          aws lambda update-function-code \
+          
+          VERSION=$(aws lambda update-function-code \
             --function-name code-that-fits \
             --zip-file "fileb://$JAR_FILE_PATH" \
-            --publish
+            --publish \
+            --query 'Version' \
+            --output text)
+
+          echo "Published version: $VERSION"
+
+          aws lambda update-alias \
+            --function-name code-that-fits \
+            --name dev \
+            --function-version $VERSION || \
+          aws lambda create-alias \
+            --function-name code-that-fits \
+            --name dev \
+            --function-version $VERSION
